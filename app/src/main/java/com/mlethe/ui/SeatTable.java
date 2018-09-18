@@ -12,15 +12,19 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.List;
 
 public class SeatTable extends View {
 
     /**
      * 座位格式
      */
-    private int[][] mSeats;
+    private List<List<Seat>> mSeats;
     /**
      * 行数、列数
      */
@@ -69,10 +73,6 @@ public class SeatTable extends View {
      * 初始化
      */
     private void init() {
-        int [][] seats = {{1,1,1,1,2,1,1,1,2,1,2,2},{1,1,0,1,2,1,1,1,2,1,2},{1,1,0,1,2,1,1,1,2,0,2},{1,1,0,1,2,1,1,1,2,0,2},{1,1,0,1,2,1,1,1,2,0,2},{1,1,0,1,2,1,1,1,2,0,2},{1,1,0,1,2,1,1,1,2,0,2},{1,1,0,1,2,1,1,1,2,0,2},{1,1,0,1,2,1,1,1,2,1,2}};
-        this.mSeats = seats;
-        this.row = getRow();
-        this.column = getColumn();
         mPaint = new Paint();
         seatEmpty = BitmapFactory.decodeResource(getResources(), R.mipmap.seat_empty);
         seatSpacing = getResources().getDimension(R.dimen.dp_2);
@@ -104,7 +104,7 @@ public class SeatTable extends View {
         if (mSeats == null) {
             return 0;
         }
-        return mSeats.length;
+        return mSeats.size();
     }
 
     /**
@@ -114,9 +114,9 @@ public class SeatTable extends View {
     private int getColumn(){
         int column = 0;
         if (mSeats != null) {
-            for (int i = 0; i < mSeats.length; i++) {
-                int[] row = mSeats[i];
-                column = Math.max(column, row.length);
+            for (int i = 0; i < mSeats.size(); i++) {
+                List<Seat> row = mSeats.get(i);
+                column = Math.max(column, row.size());
             }
         }
         return column;
@@ -182,13 +182,25 @@ public class SeatTable extends View {
 
         rowNumberPaint.setColor(Color.WHITE);
         rowNumberPaint.setTextSize(getResources().getDimension(R.dimen.sp_12));
+        int index = 0;
         for (int i = 0; i < row; i++) {
-            String str = String.valueOf(i + 1);
-            float textWidth = rowNumberPaint.measureText(str);
-            float top = i * seatEmpty.getHeight() * scale + i * seatSpacing  * scale + getSeatTop() - seatSpacing  * scale;
-            float bottom = top + (seatEmpty.getHeight() + seatSpacing) * scale;
-            float baseLine = getBaseLine(rowNumberPaint, top, bottom);
-            canvas.drawText(str, (numberWidth - textWidth) / 2, baseLine, rowNumberPaint);
+            List<Seat> column = mSeats.get(i);
+            boolean flag = false;
+            for (Seat seat : column) {
+                if (seat.getRow() > 0 || seat.getColumn() > 0) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (flag) {
+                index++;
+                String str = String.valueOf(index);
+                float textWidth = rowNumberPaint.measureText(str);
+                float top = i * seatEmpty.getHeight() * scale + i * seatSpacing * scale + getSeatTop() - seatSpacing * scale;
+                float bottom = top + (seatEmpty.getHeight() + seatSpacing) * scale;
+                float baseLine = getBaseLine(rowNumberPaint, top, bottom);
+                canvas.drawText(str, (numberWidth - textWidth) / 2, baseLine, rowNumberPaint);
+            }
         }
     }
 
@@ -231,7 +243,7 @@ public class SeatTable extends View {
         // 绘制背景
         canvas.drawRect(0, getIndicatorTop(), getWidth(), indicatorHeight + getIndicatorTop(), indicatorPaint);
 
-        float firstPointX = (getWidth() - width) / 2;
+        float firstPointX = (getWidth() - width) / 2 + pointRadius;
         float firstX = firstPointX + pointRadius + spacing1;
         indicatorPaint.setColor(Color.parseColor("#4E5362"));
         canvas.drawCircle(firstPointX, y, pointRadius, indicatorPaint);
@@ -263,10 +275,33 @@ public class SeatTable extends View {
         return (bottom + top - fontMetrics.bottom - fontMetrics.top) / 2;
     }
 
+    private GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener(){
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent event) {
+            final float x = event.getX();
+            final float y = event.getY();
+            getFor(new ForCallBack() {
+                @Override
+                public void callBack(int i, int j, Seat column) {
+                    float tempX = j * seatEmpty.getWidth() * scale + j * seatSpacing * scale + getPaddingLeft();
+                    float maxTempX = tempX + seatEmpty.getWidth() * scale;
+                    float tempY = i * seatEmpty.getHeight() * scale + i * seatSpacing  * scale + getSeatTop();
+                    float maxTempY = tempY + seatEmpty.getHeight() * scale;
+                    Log.e("TAG", "onSingleTapConfirmed: x->" + x + "    tempX->" + tempX + "    maxTempX->" + maxTempX + "   y->" + y + "   tempY->" + tempY + "    maxTempY->" + maxTempY + "     other->" + (seatSpacing * scale));
+                    if (x >= tempX && x <= maxTempX && y >= tempY && y <= maxTempY) {
+                        Log.d("TAG", "onSingleTapConfirmed1: " + column.getRow() + "排" + column.getColumn() + "号");
+                    }
+                }
+            });
+            return super.onSingleTapConfirmed(event);
+        }
+    });
+
     @Override
-    protected boolean dispatchHoverEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
+        gestureDetector.onTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN :
                 break;
@@ -283,7 +318,7 @@ public class SeatTable extends View {
      * @param seats
      * @return
      */
-    public SeatTable setSeat(int[][] seats) {
+    public SeatTable setSeat(List<List<Seat>> seats) {
         this.mSeats = seats;
         this.row = getRow();
         this.column = getColumn();
@@ -300,19 +335,38 @@ public class SeatTable extends View {
     /**
      * 绘制座位
      */
-    private void drawSeat(Canvas canvas) {
+    private void drawSeat(final Canvas canvas) {
+        getFor(new ForCallBack() {
+            @Override
+            public void callBack(int i, int j, Seat column) {
+                if (column.getRow() > 0 && column.getColumn() > 0) {
+                    float left = j * seatEmpty.getWidth() * scale + j * seatSpacing * scale + getPaddingLeft();
+                    float top = i * seatEmpty.getHeight() * scale + i * seatSpacing  * scale + getSeatTop();
+                    tempMatrix.setTranslate(left, top);
+                    tempMatrix.postScale(scale, scale, left, top);
+                    canvas.drawBitmap(seatEmpty, tempMatrix, mPaint);
+                }
+            }
+        });
+    }
+
+    /**
+     * for循环统一处理
+     * @param callBack
+     */
+    private void getFor(ForCallBack callBack) {
         // 行
         for (int i = 0; i < row; i++) {
             // 列
-            int[] column = mSeats[i];
-            for (int j = 0; j < column.length; j++) {
-                float left = j * seatEmpty.getWidth() * scale + j * seatSpacing * scale + getPaddingLeft();
-                float top = i * seatEmpty.getHeight() * scale + i * seatSpacing  * scale + getSeatTop();
-                tempMatrix.setTranslate(left, top);
-                tempMatrix.postScale(scale, scale, left, top);
-                canvas.drawBitmap(seatEmpty, tempMatrix, mPaint);
+            List<Seat> column = mSeats.get(i);
+            for (int j = 0; j < column.size(); j++) {
+                callBack.callBack(i, j, column.get(j));
             }
         }
+    }
+
+    private interface ForCallBack{
+        void callBack(int i, int j, Seat column);
     }
 
     private int getSeatType(int row, int column) {
