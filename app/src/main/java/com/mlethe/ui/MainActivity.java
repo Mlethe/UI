@@ -36,6 +36,6 @@ public class MainActivity extends AppCompatActivity {
             }
             lists.add(list);
         }
-        seatTableView.setSeat(lists);
+        seatTableView.setScreenText("3号厅 荧幕").setSeat(lists);
     }
 }

@@ -13,6 +13,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -55,14 +56,14 @@ public class SeatTableView extends View {
     private Bitmap overviewBitmap;
 
     /**
-     * 座位宽度、高度
+     * 座位宽度、高度、高宽比
      */
-    private int seatWidth, seatHeight;
+    private float seatWidth, seatHeight, aspectRatio;
 
     /**
-     * 空、选中、已售出 指示器
+     * 座位默认宽度、高度
      */
-    private Drawable seatAvailablePoint, seatCheckedPoint, seatSoldPoint;
+    private float seatDefaultW, seatDefaultH;
 
     /**
      * 座位间间距、放大倍数、座位上方的间距
@@ -90,6 +91,11 @@ public class SeatTableView extends View {
     private int screenColor;
 
     /**
+     * 荧幕文字
+     */
+    private String screenText = "";
+
+    /**
      * 指示器高度、指示器半径
      */
     private float indicatorHeight, pointRadius;
@@ -100,7 +106,7 @@ public class SeatTableView extends View {
     private int txtColor, indicatorColor, indicatorChecked, indicatorSold, indicatorAvailable;
 
     /**
-     * 指示器是否使用颜色值，默认true
+     * 指示器是否使用颜色值，默认false
      */
     private boolean indicatorIsColor;
 
@@ -117,7 +123,7 @@ public class SeatTableView extends View {
     /**
      * 是否显示概览图
      */
-    private boolean isShowOverview = false;
+    private boolean isShowOverview = true;
 
     /**
      * 概览图上方块选中、已售的颜色
@@ -166,7 +172,7 @@ public class SeatTableView extends View {
         indicatorHeight = array.getDimension(R.styleable.SeatTableView_indicator_height, getResources().getDimension(R.dimen.dp_30));
         indicatorColor = array.getColor(R.styleable.SeatTableView_indicator_color, 0);
         pointRadius = array.getDimension(R.styleable.SeatTableView_indicator_radius, getResources().getDimension(R.dimen.dp_7_5));
-        indicatorIsColor = array.getBoolean(R.styleable.SeatTableView_indicator_is_color, true);
+        indicatorIsColor = array.getBoolean(R.styleable.SeatTableView_indicator_is_color, false);
         indicatorChecked = array.getColor(R.styleable.SeatTableView_indicator_checked, Color.parseColor("#579F62"));
         indicatorSold = array.getColor(R.styleable.SeatTableView_indicator_sold, Color.parseColor("#E775C0"));
         indicatorAvailable = array.getColor(R.styleable.SeatTableView_indicator_available, Color.parseColor("#EBEBEB"));
@@ -195,6 +201,7 @@ public class SeatTableView extends View {
         mPaint.setAntiAlias(true);
         seatWidth = seatAvailable.getWidth();
         seatHeight = seatAvailable.getHeight();
+        aspectRatio = seatHeight / seatWidth;
 
         indicatorPaint = new Paint();
         indicatorPaint.setAntiAlias(true);
@@ -207,14 +214,13 @@ public class SeatTableView extends View {
         screenPaint = new Paint();
         screenPaint.setAntiAlias(true);
         screenPaint.setStyle(Paint.Style.FILL);
+        screenPaint.setTextSize(getResources().getDimension(R.dimen.sp_12));
 
         overviewPaint = new Paint();
         overviewPaint.setAntiAlias(true);
         overviewPaint.setStrokeWidth(getResources().getDimension(R.dimen.dp_1));
-        overviewPadding = getResources().getDimension(R.dimen.dp_3);
+        overviewPadding = getResources().getDimension(R.dimen.dp_5);
         rectScreenHeight = getResources().getDimension(R.dimen.dp_2);
-        rectHeight = seatHeight / overviewScale;
-        rectWidth = seatWidth / overviewScale;
         overviewSpacing = seatSpacing / overviewScale;
     }
 
@@ -234,12 +240,13 @@ public class SeatTableView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
-        float seatWidth = this.seatWidth * column + seatSpacing * (column - 1);
         width = width - getPaddingLeft() - getPaddingRight();
-        if (seatWidth <= width) {
-            scale = width / seatWidth;
-        }
+        seatDefaultW = (width - seatSpacing * (column - 1)) / column;
+        seatDefaultH = seatDefaultW * aspectRatio;
+        scale = seatDefaultW / seatWidth;
 
+        rectHeight = seatDefaultH / overviewScale;
+        rectWidth = seatDefaultW / overviewScale;
         overviewWidth = rectWidth * column + overviewSpacing * (column - 1) + overviewPadding * 2;
         overviewHeight = rectHeight * getRowNum() + overviewSpacing * (getRowNum() - 1) + overviewPadding * 3 + rectScreenHeight;
         overviewBitmap = Bitmap.createBitmap((int) overviewWidth, (int) overviewHeight, Bitmap.Config.ARGB_4444);
@@ -273,10 +280,13 @@ public class SeatTableView extends View {
     private void drawOverview(final Canvas canvas) {
         overviewPaint.setStyle(Paint.Style.FILL);
         overviewPaint.setColor(Color.parseColor("#7e000000"));
-        canvas.drawRect(0, 0, overviewWidth, overviewHeight, overviewPaint);
+        canvas.drawRect(0, getOverviewTop(), overviewWidth, overviewHeight + getOverviewTop(), overviewPaint);
+
+        // 绘制红色框
+
         float left = (overviewWidth - (rectWidth + overviewSpacing) * column * 2 / 3 - overviewSpacing) / 2;
         float right = left + (rectWidth + overviewSpacing) * column * 2 / 3;
-        float top = overviewPadding;
+        float top = overviewPadding + getOverviewTop();
         float bottom = top + rectScreenHeight;
         overviewPaint.setColor(Color.BLUE);
         overviewPaint.setStyle(Paint.Style.STROKE);
@@ -287,7 +297,7 @@ public class SeatTableView extends View {
                 if (seat.getState() != Seat.SEAT_TYPE_NOT_AVAILABLE) {
                     float left = j * rectWidth + j * overviewSpacing + overviewPadding;
                     float right = left + rectWidth;
-                    float top = i * rectHeight + i * overviewSpacing + overviewPadding * 2 + rectScreenHeight;
+                    float top = i * rectHeight + i * overviewSpacing + overviewPadding * 2 + rectScreenHeight + getOverviewTop();
                     float bottom = top + rectHeight;
                     overviewPaint.setStyle(Paint.Style.FILL);
                     switch (seat.getState()) {
@@ -326,6 +336,12 @@ public class SeatTableView extends View {
         path.close();
         screenPaint.setColor(screenColor);
         canvas.drawPath(path, screenPaint);
+
+        float baseLine = getBaseLine(screenPaint, top, top + screenHeight);
+        float textWidth = screenPaint.measureText(screenText);
+        float x = (getWidth() - textWidth) / 2;
+        screenPaint.setColor(Color.BLACK);
+        canvas.drawText(screenText, x, baseLine, screenPaint);
     }
 
     /**
@@ -336,7 +352,7 @@ public class SeatTableView extends View {
     private void drawNumber(Canvas canvas) {
         RectF rectF = new RectF();
         rectF.top = getSeatTop() - seatSpacing / 2;
-        rectF.bottom = rectF.top + (seatHeight + seatSpacing) * getRowNum() * scale - seatSpacing * scale + seatSpacing;
+        rectF.bottom = rectF.top + seatHeight * getRowNum() * scale + seatSpacing * getRowNum();
         rectF.left = leftMargin;
         rectF.right = numberWidth + leftMargin;
         rowNumberPaint.setColor(Color.BLACK);
@@ -350,8 +366,8 @@ public class SeatTableView extends View {
             String rowNumber = mSeatRows.get(i);
             if (!rowNumber.contains(NOTHING)) {
                 float textWidth = rowNumberPaint.measureText(rowNumber);
-                float top = i * seatHeight * scale + i * seatSpacing * scale + getSeatTop() - seatSpacing * scale + seatSpacing / 2;
-                float bottom = top + (seatHeight + seatSpacing) * scale;
+                float top = i * seatHeight * scale + (i - 1) * seatSpacing + getSeatTop();
+                float bottom = top + seatHeight * scale + seatSpacing;
                 float baseLine = getBaseLine(rowNumberPaint, top, bottom);
                 canvas.drawText(rowNumber, (numberWidth - textWidth) / 2 + leftMargin, baseLine, rowNumberPaint);
             }
@@ -365,9 +381,9 @@ public class SeatTableView extends View {
      */
     private float getIndicatorTop() {
         if (!indicatorScreenSwap) {
-            return 0;
+            return getPaddingTop();
         }
-        return screenHeight;
+        return screenHeight + getScreenTop();
     }
 
     /**
@@ -377,9 +393,17 @@ public class SeatTableView extends View {
      */
     private float getScreenTop() {
         if (indicatorScreenSwap) {
-            return 0;
+            return getPaddingTop();
         }
-        return indicatorHeight;
+        return indicatorHeight + getIndicatorTop();
+    }
+
+    /**
+     * 获取概览图顶部位置
+     * @return
+     */
+    private float getOverviewTop() {
+        return getPaddingTop();
     }
 
     /**
@@ -388,7 +412,7 @@ public class SeatTableView extends View {
      * @return
      */
     private float getSeatTop() {
-        return indicatorHeight + topSpacing + screenHeight;
+        return getIndicatorTop() + topSpacing + getScreenTop();
     }
 
     /**
@@ -432,8 +456,8 @@ public class SeatTableView extends View {
             canvas.drawText("已售", thirdX, textY, indicatorPaint);
         } else {
             float scaleX = pointRadius * 2 / seatWidth;
-            float scaleY = pointRadius * 2 / seatHeight;
-            float y = getIndicatorTop() + indicatorHeight / 2 - pointRadius;
+            float scaleY = pointRadius * 2 * aspectRatio / seatHeight;
+            float y = getIndicatorTop() + indicatorHeight / 2 - pointRadius * aspectRatio;
             float firstPointX = (getWidth() - width) / 2;
             float firstX = firstPointX + pointRadius * 2 + spacing1;
             tempMatrix.setTranslate(firstPointX, y);
@@ -468,6 +492,10 @@ public class SeatTableView extends View {
     private float getBaseLine(Paint p, float top, float bottom) {
         Paint.FontMetrics fontMetrics = p.getFontMetrics();
         return (bottom + top - fontMetrics.bottom - fontMetrics.top) / 2;
+        /*Paint.FontMetrics fontMetrics = p.getFontMetrics();
+        float dy = (fontMetrics.descent - fontMetrics.ascent) / 2 - fontMetrics.descent;
+//        float dy = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
+        return (bottom - top) / 2 + dy + top;*/
     }
 
     /**
@@ -506,9 +534,9 @@ public class SeatTableView extends View {
             getFor(new ForCallBack() {
                 @Override
                 public void callBack(int i, int j, Seat seat) {
-                    float tempX = j * seatWidth * scale + j * seatSpacing * scale + getPaddingLeft();
+                    float tempX = j * seatWidth * scale + j * seatSpacing + getPaddingLeft();
                     float maxTempX = tempX + seatWidth * scale;
-                    float tempY = i * seatHeight * scale + i * seatSpacing * scale + getSeatTop();
+                    float tempY = i * seatHeight * scale + i * seatSpacing + getSeatTop();
                     float maxTempY = tempY + seatHeight * scale;
 //                    Log.e("TAG", "onSingleTapConfirmed: x->" + x + "    tempX->" + tempX + "    maxTempX->" + maxTempX + "   y->" + y + "   tempY->" + tempY + "    maxTempY->" + maxTempY + "     other->" + (seatSpacing * scale));
                     if (x >= tempX && x <= maxTempX && y >= tempY && y <= maxTempY) {
@@ -551,6 +579,16 @@ public class SeatTableView extends View {
      */
     public SeatTableView setCheckListener(CheckListener checkListener) {
         this.mCheckListener = checkListener;
+        return this;
+    }
+
+    /**
+     * 设置荧幕文字
+     * @param text
+     * @return
+     */
+    public SeatTableView setScreenText(String text) {
+        this.screenText = text;
         return this;
     }
 
@@ -614,8 +652,9 @@ public class SeatTableView extends View {
             @Override
             public void callBack(int i, int j, Seat seat) {
                 if (seat.getState() != Seat.SEAT_TYPE_NOT_AVAILABLE) {
-                    float left = j * seatWidth * scale + j * seatSpacing * scale + getPaddingLeft();
-                    float top = i * seatHeight * scale + i * seatSpacing * scale + getSeatTop();
+                    float left = j * seatWidth * scale + j * seatSpacing + getPaddingLeft();
+                    float top = i * seatHeight * scale + i * seatSpacing + getSeatTop();
+                    Log.e("TAG", "callBack: left->" + left + "    top->" + top + "      scale->" + scale + "    seatWidth->" + seatWidth + "    seatDefaultW->" + seatDefaultW);
                     tempMatrix.setTranslate(left, top);
                     tempMatrix.postScale(scale, scale, left, top);
                     switch (seat.getState()) {
