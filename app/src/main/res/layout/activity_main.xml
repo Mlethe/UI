@@ -6,14 +6,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.mlethe.ui.LinearGradientTextView
+    <!--<com.mlethe.ui.LinearGradientTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/black"
         android:textColor="#666666"
-        android:text="欢迎来到Mlethe学习课堂"/>
+        android:text="欢迎来到Mlethe学习课堂"/>-->
 
-    <com.mlethe.ui.SeatTable
+    <com.mlethe.ui.SeatTableView
         android:id="@+id/seat_table"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

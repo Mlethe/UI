@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SeatTableView">
+        <!--座位选中-->
+        <attr name="seat_checked" format="reference" />
+        <!--座位已售-->
+        <attr name="seat_sold" format="reference" />
+        <!--座位可选-->
+        <attr name="seat_available" format="reference" />
+        <!--座位间隔-->
+        <attr name="seat_spacing" format="dimension" />
+        <!--座位顶部间隔-->
+        <attr name="seat_top_spacing" format="dimension" />
+        <!--概况选中-->
+        <attr name="overview_checked" format="color" />
+        <!--概况已售-->
+        <attr name="overview_sold" format="color" />
+        <!--指示器文字颜色-->
+        <attr name="txt_color" format="color"/>
+        <!--指示器文字大小-->
+        <attr name="txt_size" format="dimension"/>
+        <!--指示器高度-->
+        <attr name="indicator_height" format="dimension"/>
+        <!--指示器背景颜色-->
+        <attr name="indicator_color" format="color"/>
+        <!--指示器点的半径-->
+        <attr name="indicator_radius" format="dimension"/>
+        <!--指示器点是颜色-->
+        <attr name="indicator_is_color" format="boolean"/>
+        <!--指示器选中-->
+        <attr name="indicator_checked" format="color" />
+        <!--指示器已售-->
+        <attr name="indicator_sold" format="color" />
+        <!--指示器可选-->
+        <attr name="indicator_available" format="color" />
+        <!--荧幕的宽度-->
+        <attr name="screen_width" format="dimension" />
+        <!--荧幕的高度-->
+        <attr name="screen_height" format="dimension" />
+        <!--荧幕颜色-->
+        <attr name="screen_color" format="color" />
+        <!--指示器和荧幕的位置交换-->
+        <attr name="indicator_screen_swap" format="boolean" />
+        <!--侧边行号宽度-->
+        <attr name="side_width" format="boolean" />
+        <!--侧边行号文字大小-->
+        <attr name="side_text_size" format="dimension" />
+        <!--侧边行号margin-->
+        <attr name="side_left_margin" format="dimension" />
+    </declare-styleable>
+</resources>
