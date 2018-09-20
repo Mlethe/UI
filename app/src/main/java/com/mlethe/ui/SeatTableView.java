@@ -106,6 +106,11 @@ public class SeatTableView extends View {
     private int txtColor, indicatorColor, indicatorChecked, indicatorSold, indicatorAvailable;
 
     /**
+     * 指示器点选中、已售、可选的文字
+     */
+    private String indicatorCheckedText, indicatorSoldText, indicatorAvailableText;
+
+    /**
      * 指示器是否使用颜色值，默认false
      */
     private boolean indicatorIsColor;
@@ -136,6 +141,7 @@ public class SeatTableView extends View {
     float overviewHeight, overviewWidth, rectHeight, rectWidth, overviewSpacing, overviewScale = 4.8f, overviewPadding, rectScreenHeight;
 
     private Matrix tempMatrix = new Matrix();
+    private Matrix matrix = new Matrix();
 
     /**
      * 座位画笔、指示器画笔、行号画笔、荧幕画笔、概略图画笔
@@ -176,6 +182,18 @@ public class SeatTableView extends View {
         indicatorChecked = array.getColor(R.styleable.SeatTableView_indicator_checked, Color.parseColor("#579F62"));
         indicatorSold = array.getColor(R.styleable.SeatTableView_indicator_sold, Color.parseColor("#E775C0"));
         indicatorAvailable = array.getColor(R.styleable.SeatTableView_indicator_available, Color.parseColor("#EBEBEB"));
+        indicatorCheckedText = array.getString(R.styleable.SeatTableView_indicator_checked_text);
+        if (indicatorCheckedText == null) {
+            indicatorCheckedText = "";
+        }
+        indicatorSoldText = array.getString(R.styleable.SeatTableView_indicator_sold_text);
+        if (indicatorSoldText == null) {
+            indicatorSoldText = "";
+        }
+        indicatorAvailableText = array.getString(R.styleable.SeatTableView_indicator_available_text);
+        if (indicatorAvailableText == null) {
+            indicatorAvailableText = "";
+        }
 
         numberWidth = array.getDimension(R.styleable.SeatTableView_side_width, getResources().getDimension(R.dimen.dp_15));
         sideTextSize = array.getDimension(R.styleable.SeatTableView_side_text_size, getResources().getDimension(R.dimen.sp_12));
@@ -422,10 +440,12 @@ public class SeatTableView extends View {
      */
     private void drawIndicator(Canvas canvas) {
         float textY = getBaseLine(indicatorPaint, getIndicatorTop(), indicatorHeight + getIndicatorTop());
-        float textWidth = indicatorPaint.measureText("已售");
+        float availableTextWidth = indicatorPaint.measureText(indicatorAvailableText);
+        float checkedTextWidth = indicatorPaint.measureText(indicatorCheckedText);
+        float soldTextWidth = indicatorPaint.measureText(indicatorSoldText);
         float spacing = getResources().getDimension(R.dimen.dp_10);
         float spacing1 = getResources().getDimension(R.dimen.dp_5);
-        float width = pointRadius * 2 * 3 + textWidth * 3 + spacing * 2 + spacing1 * 3;
+        float width = pointRadius * 2 * 3 + availableTextWidth + checkedTextWidth + soldTextWidth + spacing * 2 + spacing1 * 3;
         indicatorPaint.setColor(indicatorColor);
         // 绘制背景
         canvas.drawRect(0, getIndicatorTop(), getWidth(), indicatorHeight + getIndicatorTop(), indicatorPaint);
@@ -439,21 +459,21 @@ public class SeatTableView extends View {
             indicatorPaint.setColor(indicatorAvailable);
             canvas.drawCircle(firstPointX, y, pointRadius, indicatorPaint);
             indicatorPaint.setColor(txtColor);
-            canvas.drawText("可选", firstX, textY, indicatorPaint);
+            canvas.drawText(indicatorAvailableText, firstX, textY, indicatorPaint);
 
-            float secondPointX = firstX + textWidth + spacing + pointRadius;
+            float secondPointX = firstX + availableTextWidth + spacing + pointRadius;
             float secondX = secondPointX + pointRadius + spacing1;
             indicatorPaint.setColor(indicatorChecked);
             canvas.drawCircle(secondPointX, y, pointRadius, indicatorPaint);
             indicatorPaint.setColor(txtColor);
-            canvas.drawText("选中", secondX, textY, indicatorPaint);
+            canvas.drawText(indicatorCheckedText, secondX, textY, indicatorPaint);
 
-            float thirdPointX = secondX + textWidth + spacing + pointRadius;
+            float thirdPointX = secondX + checkedTextWidth + spacing + pointRadius;
             float thirdX = thirdPointX + pointRadius + spacing1;
             indicatorPaint.setColor(indicatorSold);
             canvas.drawCircle(thirdPointX, y, pointRadius, indicatorPaint);
             indicatorPaint.setColor(txtColor);
-            canvas.drawText("已售", thirdX, textY, indicatorPaint);
+            canvas.drawText(indicatorSoldText, thirdX, textY, indicatorPaint);
         } else {
             float scaleX = pointRadius * 2 / seatWidth;
             float scaleY = pointRadius * 2 * aspectRatio / seatHeight;
@@ -464,23 +484,23 @@ public class SeatTableView extends View {
             tempMatrix.postScale(scaleX, scaleY, firstPointX, y);
             canvas.drawBitmap(seatAvailable, tempMatrix, indicatorPaint);
             indicatorPaint.setColor(txtColor);
-            canvas.drawText("可选", firstX, textY, indicatorPaint);
+            canvas.drawText(indicatorAvailableText, firstX, textY, indicatorPaint);
 
-            float secondPointX = firstX + textWidth + spacing;
+            float secondPointX = firstX + availableTextWidth + spacing;
             float secondX = secondPointX + pointRadius * 2 + spacing1;
             tempMatrix.setTranslate(secondPointX, y);
             tempMatrix.postScale(scaleX, scaleY, secondPointX, y);
             canvas.drawBitmap(seatChecked, tempMatrix, indicatorPaint);
             indicatorPaint.setColor(txtColor);
-            canvas.drawText("选中", secondX, textY, indicatorPaint);
+            canvas.drawText(indicatorCheckedText, secondX, textY, indicatorPaint);
 
-            float thirdPointX = secondX + textWidth + spacing;
+            float thirdPointX = secondX + checkedTextWidth + spacing;
             float thirdX = thirdPointX + pointRadius * 2 + spacing1;
             tempMatrix.setTranslate(thirdPointX, y);
             tempMatrix.postScale(scaleX, scaleY, thirdPointX, y);
             canvas.drawBitmap(seatSold, tempMatrix, indicatorPaint);
             indicatorPaint.setColor(txtColor);
-            canvas.drawText("已售", thirdX, textY, indicatorPaint);
+            canvas.drawText(indicatorSoldText, thirdX, textY, indicatorPaint);
         }
 
         //绘制分割线
@@ -544,7 +564,11 @@ public class SeatTableView extends View {
                             if (selectSeats.size() < maxSelected) {
                                 checked(seat);
                             } else {
-                                Toast.makeText(getContext(), "最多只能选择" + maxSelected + "个", Toast.LENGTH_SHORT).show();
+                                if (mCheckListener != null) {
+                                    mCheckListener.overstep(maxSelected);
+                                } else {
+                                    Toast.makeText(getContext(), "最多只能选择" + maxSelected + "个", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         } else if (seat.getState() == Seat.SEAT_TYPE_SELECTED) {
                             uncheck(seat);
@@ -654,7 +678,7 @@ public class SeatTableView extends View {
                 if (seat.getState() != Seat.SEAT_TYPE_NOT_AVAILABLE) {
                     float left = j * seatWidth * scale + j * seatSpacing + getPaddingLeft();
                     float top = i * seatHeight * scale + i * seatSpacing + getSeatTop();
-                    Log.e("TAG", "callBack: left->" + left + "    top->" + top + "      scale->" + scale + "    seatWidth->" + seatWidth + "    seatDefaultW->" + seatDefaultW);
+//                    Log.e("TAG", "callBack: left->" + left + "    top->" + top + "      scale->" + scale + "    seatWidth->" + seatWidth + "    seatDefaultW->" + seatDefaultW);
                     tempMatrix.setTranslate(left, top);
                     tempMatrix.postScale(scale, scale, left, top);
                     switch (seat.getState()) {
@@ -707,6 +731,11 @@ public class SeatTableView extends View {
          * @param seat
          */
         void uncheck(Seat seat);
+
+        /**
+         * 超出最大值
+         */
+        void overstep(int max);
     }
 
 }

@@ -17,6 +17,9 @@
         android:id="@+id/seat_table"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:indicator_available_text="可选"
+        app:indicator_checked_text="选中"
+        app:indicator_sold_text="已售"
         android:padding="@dimen/dp_20"/>
 
 </LinearLayout>

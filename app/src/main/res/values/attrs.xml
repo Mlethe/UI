@@ -33,6 +33,12 @@
         <attr name="indicator_sold" format="color" />
         <!--指示器可选-->
         <attr name="indicator_available" format="color" />
+        <!--指示器选中文字-->
+        <attr name="indicator_checked_text" format="string" />
+        <!--指示器已售文字-->
+        <attr name="indicator_sold_text" format="string" />
+        <!--指示器可选文字-->
+        <attr name="indicator_available_text" format="string" />
         <!--荧幕的宽度-->
         <attr name="screen_width" format="dimension" />
         <!--荧幕的高度-->
