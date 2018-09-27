@@ -3,8 +3,12 @@ package com.mlethe.ui;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,5 +98,25 @@ public class ExampleUnitTest {
         }
 
         return luckyPrizeId;
+    }
+
+    @Test
+    public void test2() {
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+//        c.set(Calendar.HOUR_OF_DAY, n);
+//        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        long time = c.getTimeInMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = null;
+        try {
+            date = sdf.parse("2018-09-26 13:00:00");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        int i = c.get(Calendar.MINUTE);
+        Date date1 = new Date((time / (1000 * 60 * 10)) * (1000 * 60 * 10));
+        System.out.printf("first->" + sdf.format(new Date(time)) + "     second->" + "|" + (time % (1000 * 60 * 10) == 0) + "    third->" + (date.getTime() % (1000 * 60 * 10) == 0) + "     minute->" + i + "     x->" + (i / 10) * 10 + "   " + sdf.format(date1));
     }
 }
