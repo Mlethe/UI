@@ -1,5 +1,9 @@
 package com.mlethe.ui;
 
+import android.text.format.DateUtils;
+
+import com.mlethe.ui.util.DateUtil;
+
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
@@ -102,21 +107,12 @@ public class ExampleUnitTest {
 
     @Test
     public void test2() {
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-//        c.set(Calendar.HOUR_OF_DAY, n);
-//        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        long time = c.getTimeInMillis();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = null;
-        try {
-            date = sdf.parse("2018-09-26 13:00:00");
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        int i = c.get(Calendar.MINUTE);
-        Date date1 = new Date((time / (1000 * 60 * 10)) * (1000 * 60 * 10));
-        System.out.printf("first->" + sdf.format(new Date(time)) + "     second->" + "|" + (time % (1000 * 60 * 10) == 0) + "    third->" + (date.getTime() % (1000 * 60 * 10) == 0) + "     minute->" + i + "     x->" + (i / 10) * 10 + "   " + sdf.format(date1));
+////        System.out.println(sdf.format(DateUtil.getDayBeginOfMonth()));
+////        System.out.println(sdf.format(DateUtil.getHour(1,20)));
+////        System.out.println(DateUtil.getNowMinute());
+        Date date = DateUtil.getTime(2018,10,21,0,0,0);
+        long day = 1000 * 60 * 60 * 24;
+        System.out.println(sdf.format(new Date(date.getTime() + day * 120)));
     }
 }
