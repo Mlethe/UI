@@ -156,7 +156,7 @@ public class SeatTableView extends View {
     private Matrix tempMatrix = new Matrix();
     private Matrix matrix = new Matrix();
 
-    float[] m = new float[9];
+    private float[] m = new float[9];
 
     /**
      * 座位画笔、指示器画笔、行号画笔、荧幕画笔、概略图画笔、红色边框画笔
@@ -319,12 +319,12 @@ public class SeatTableView extends View {
         }
         // 绘制座位
         drawSeat(canvas);
+        // 绘制行号
+        drawNumber(canvas);
         // 绘制指示器
         drawIndicator(canvas);
         // 绘制荧幕
         drawScreen(canvas);
-        // 绘制行号
-        drawNumber(canvas);
         // 绘制概览图
         if (isShowOverview) {
             if (isDrawOverviewBitmap) {
@@ -609,7 +609,6 @@ public class SeatTableView extends View {
      * @param canvas
      */
     private void drawRedOverview(Canvas canvas) {
-
         float left = overviewPadding - redBorderSize * 2;
         float right = overviewWidth - overviewPadding + redBorderSize * 2;
         float top = overviewPadding * 2 + rectScreenHeight - redBorderSize * 2;
