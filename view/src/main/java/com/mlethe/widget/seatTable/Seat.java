@@ -1,7 +1,11 @@
-package com.mlethe.ui;
+package com.mlethe.widget.seatTable;
 
 import android.text.TextUtils;
 
+/**
+ * 座位
+ * Created by Mlethe on 2018/10/17.
+ */
 public class Seat {
 
     /**

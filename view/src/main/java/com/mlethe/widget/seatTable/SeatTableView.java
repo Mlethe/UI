@@ -1,4 +1,4 @@
-package com.mlethe.ui;
+package com.mlethe.widget.seatTable;
 
 import android.animation.Animator;
 import android.animation.TypeEvaluator;
@@ -24,9 +24,15 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
 
+import com.mlethe.widget.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 电影票选座
+ * Created by Mlethe on 2018/10/17.
+ */
 public class SeatTableView extends View {
 
     private static final String NOTHING = "nothing";
@@ -978,9 +984,12 @@ public class SeatTableView extends View {
             final float y = event.getY();
             final float scaleX = getMatrixScaleX();
             final float scaleY = getMatrixScaleY();
-            getFor(new ForCallBack() {
-                @Override
-                public void callBack(int i, int j, Seat seat) {
+            // 行
+            for (int i = 0; i < getRowNum(); i++) {
+                // 列
+                List<Seat> seats = mSeats.get(i);
+                for (int j = 0; j < seats.size(); j++) {
+                    Seat seat = seats.get(j);
                     float tempX = j * seatWidth * scale * scaleX + j * seatSpacing * scaleX + getTranslateX();
                     float maxTempX = tempX + seatWidth * scale * scaleX;
                     float tempY = i * seatHeight * scale * scaleY + i * seatSpacing * scaleY + getTranslateY();
@@ -1009,9 +1018,10 @@ public class SeatTableView extends View {
                             mScaleY = y;
                             zoomAnimate(currentScaleY, 1.9f);
                         }
+                        return super.onSingleTapConfirmed(event);
                     }
                 }
-            });
+            }
             return super.onSingleTapConfirmed(event);
         }
     });
@@ -1023,6 +1033,16 @@ public class SeatTableView extends View {
      */
     public SeatTableView setCheckListener(CheckListener checkListener) {
         this.mCheckListener = checkListener;
+        return this;
+    }
+
+    /**
+     * 设置最大选座数量
+     * @param maxSelected
+     * @return
+     */
+    public SeatTableView setMaxSelected(int maxSelected) {
+        this.maxSelected = maxSelected;
         return this;
     }
 

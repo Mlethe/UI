@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PalaceLayout(宫格布局) -->
+    <declare-styleable name="PalaceLayout">
+        <!-- 列间距 -->
+        <attr name="palaceColumnInterval" format="dimension"/>
+        <!-- 行间距 -->
+        <attr name="palaceRowInterval" format="dimension"/>
+        <!-- 每行item的个数 -->
+        <attr name="palaceSpanCount" format="integer"/>
+    </declare-styleable>
+
+    <!-- BannerView(轮播图) -->
+    <declare-styleable name="BannerView">
+        <!-- 点的类型 -->
+        <attr name="dotIndicatorType" format="enum">
+            <enum name="circle" value="0"/>
+            <enum name="square" value="1"/>
+            <enum name="circle_line" value="2"/>
+            <enum name="square_line" value="3"/>
+        </attr>
+        <!-- 点的选中颜色值 -->
+        <attr name="dotIndicatorFocus" format="color|reference"/>
+        <!-- 点的默认颜色值 -->
+        <attr name="dotIndicatorNormal" format="color|reference"/>
+        <!-- 点的宽度 -->
+        <attr name="dotWidth" format="dimension"/>
+        <!-- 点的高度 -->
+        <attr name="dotHeight" format="dimension"/>
+        <!-- 点的间距-->
+        <attr name="dotDistance" format="dimension"/>
+        <!-- 点的位置 -->
+        <attr name="dotGravity" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="right" value="1"/>
+            <enum name="left" value="-1"/>
+        </attr>
+        <!-- 底部的颜色 -->
+        <attr name="bottomBackground" format="color"/>
+        <!-- 底部高度 -->
+        <attr name="bottomHeight" format="dimension"/>
+        <!-- 描述字体颜色 -->
+        <attr name="descTextColor" format="color"/>
+        <!-- 描述字体大小 -->
+        <attr name="descTextSize" format="dimension"/>
+        <!-- 是否自动轮播 -->
+        <attr name="isAutoPlay" format="boolean"/>
+        <!-- 轮播间隔时间，默认2000 -->
+        <attr name="delayTime" format="integer"/>
+        <!-- 轮播滑动执行时间，默认950 -->
+        <attr name="scrollTime" format="integer" />
+        <!-- 设置默认图片 -->
+        <attr name="bannerDefaultImage" format="reference" />
+        <!-- 是否使用默认图片 -->
+        <attr name="isDefaultImage" format="boolean" />
+    </declare-styleable>
+
+    <!-- FlowLayout(流式标签布局) -->
+    <declare-styleable name="FlowLayout">
+        <!-- 列间距 -->
+        <attr name="columnInterval" format="dimension"/>
+        <!-- 行间距 -->
+        <attr name="rowInterval" format="dimension"/>
+    </declare-styleable>
+
+    <!-- SeatTableView（电影票选座）-->
+    <declare-styleable name="SeatTableView">
+        <!--座位选中-->
+        <attr name="seat_checked" format="reference" />
+        <!--座位已售-->
+        <attr name="seat_sold" format="reference" />
+        <!--座位可选-->
+        <attr name="seat_available" format="reference" />
+        <!--座位间隔-->
+        <attr name="seat_spacing" format="dimension" />
+        <!--座位顶部间隔-->
+        <attr name="seat_top_spacing" format="dimension" />
+        <!--概况选中-->
+        <attr name="overview_checked" format="color" />
+        <!--概况已售-->
+        <attr name="overview_sold" format="color" />
+        <!--指示器文字颜色-->
+        <attr name="txt_color" format="color"/>
+        <!--指示器文字大小-->
+        <attr name="txt_size" format="dimension"/>
+        <!--指示器高度-->
+        <attr name="indicator_height" format="dimension"/>
+        <!--指示器背景颜色-->
+        <attr name="indicator_background_color" format="color"/>
+        <!--指示器点的半径-->
+        <attr name="indicator_radius" format="dimension"/>
+        <!--指示器点是颜色-->
+        <attr name="indicator_is_color" format="boolean"/>
+        <!--指示器选中-->
+        <attr name="indicator_checked" format="color" />
+        <!--指示器已售-->
+        <attr name="indicator_sold" format="color" />
+        <!--指示器可选-->
+        <attr name="indicator_available" format="color" />
+        <!--指示器选中文字-->
+        <attr name="indicator_checked_text" format="string" />
+        <!--指示器已售文字-->
+        <attr name="indicator_sold_text" format="string" />
+        <!--指示器可选文字-->
+        <attr name="indicator_available_text" format="string" />
+        <!--荧幕的宽度-->
+        <attr name="screen_width" format="dimension" />
+        <!--荧幕的高度-->
+        <attr name="screen_height" format="dimension" />
+        <!--荧幕颜色-->
+        <attr name="screen_color" format="color" />
+        <!--荧幕背景颜色-->
+        <attr name="screen_background_color" format="color" />
+        <!--指示器和荧幕的位置交换-->
+        <attr name="indicator_screen_swap" format="boolean" />
+        <!--侧边行号宽度-->
+        <attr name="side_width" format="boolean" />
+        <!--侧边行号文字大小-->
+        <attr name="side_text_size" format="dimension" />
+        <!--侧边行号margin-->
+        <attr name="side_left_margin" format="dimension" />
+    </declare-styleable>
+</resources>

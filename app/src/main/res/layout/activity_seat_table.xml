@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.SeatTableActivity">
+
+    <com.mlethe.widget.seatTable.SeatTableView
+        android:id="@+id/seat_table"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:indicator_available_text="可选"
+        app:indicator_checked_text="选中"
+        app:indicator_sold_text="已售"
+        app:indicator_screen_swap="true"
+        app:screen_background_color="@color/colorPrimaryDark"
+        app:indicator_background_color="@color/colorPrimary"
+        app:indicator_is_color="true"
+        android:background="@color/colorAccent"
+        android:paddingLeft="@dimen/dp_20"
+        android:paddingRight="@dimen/dp_20"/>
+
+</android.support.constraint.ConstraintLayout>

@@ -13,18 +13,16 @@
         android:textColor="#666666"
         android:text="欢迎来到Mlethe学习课堂"/>-->
 
-    <com.mlethe.ui.SeatTableView
-        android:id="@+id/seat_table"
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/test_btn"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:indicator_available_text="可选"
-        app:indicator_checked_text="选中"
-        app:indicator_sold_text="已售"
-        app:indicator_screen_swap="true"
-        app:screen_background_color="@color/colorPrimaryDark"
-        app:indicator_background_color="@color/colorPrimary"
-        android:background="@color/colorAccent"
-        android:paddingLeft="@dimen/dp_20"
-        android:paddingRight="@dimen/dp_20"/>
+        android:text="test"/>
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/seat_table_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="电影票选座"/>
 
 </LinearLayout>
