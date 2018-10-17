@@ -14,11 +14,9 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -66,6 +64,11 @@ public class SeatTableView extends View {
      * 座位宽度、高度、高宽比
      */
     private float seatWidth, seatHeight, aspectRatio;
+
+    /**
+     * 座位整个的宽度、高度
+     */
+    private float seatBitmapWidth, seatBitmapHeight;
 
     /**
      * 座位默认宽度、高度
@@ -296,6 +299,21 @@ public class SeatTableView extends View {
     }
 
     @Override
+    protected void onDetachedFromWindow() {
+        handler.removeCallbacks(hideOverviewRunnable);
+        hideOverviewRunnable = null;
+        seatAvailable.recycle();
+        seatAvailable = null;
+        seatChecked.recycle();
+        seatChecked = null;
+        seatSold.recycle();
+        seatSold = null;
+        overviewBitmap.recycle();
+        overviewBitmap = null;
+        super.onDetachedFromWindow();
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
@@ -303,6 +321,8 @@ public class SeatTableView extends View {
         seatDefaultW = (width - seatSpacing * (column - 1)) / column;
         seatDefaultH = seatDefaultW * aspectRatio;
         scale = seatDefaultW / seatWidth;
+        seatBitmapWidth = (int) (column * seatDefaultW + (column - 1) * seatSpacing);
+        seatBitmapHeight = (int) (getRowNum() * seatDefaultH + (getRowNum() - 1) * seatSpacing);
 
         rectHeight = seatDefaultH / overviewScale;
         rectWidth = seatDefaultW / overviewScale;
@@ -399,8 +419,8 @@ public class SeatTableView extends View {
      * 往上滑动,回弹到底部,往下滑动回弹到顶部
      */
     private void autoScroll() {
-        float currentSeatBitmapWidth = seatWidth * getMatrixScaleX();
-        float currentSeatBitmapHeight = seatHeight * getMatrixScaleY();
+        float currentSeatBitmapWidth = seatBitmapWidth * getMatrixScaleX();
+        float currentSeatBitmapHeight = seatBitmapHeight * getMatrixScaleY();
         float moveYLength = 0;
         float moveXLength = 0;
 
@@ -432,7 +452,7 @@ public class SeatTableView extends View {
 
         }
 
-        float startYPosition = getSeatTop() * getMatrixScaleY();
+        float startYPosition = getSeatTop();
 
         //处理上下滑动
         if (currentSeatBitmapHeight + getSeatTop() < getHeight()) {
@@ -470,7 +490,6 @@ public class SeatTableView extends View {
     }
 
     private void autoScale() {
-
         if (getMatrixScaleX() > 2.2) {
             zoomAnimate(getMatrixScaleX(), 2.0f);
         } else if (getMatrixScaleX() < 0.98) {
@@ -563,6 +582,7 @@ public class SeatTableView extends View {
      * 绘制概览图
      */
     private void drawOverview() {
+        isDrawOverviewBitmap = false;
         final Canvas canvas = new Canvas(overviewBitmap);
         overviewPaint.setStyle(Paint.Style.FILL);
         overviewPaint.setColor(Color.parseColor("#7e000000"));
@@ -609,10 +629,39 @@ public class SeatTableView extends View {
      * @param canvas
      */
     private void drawRedOverview(Canvas canvas) {
-        float left = overviewPadding - redBorderSize * 2;
-        float right = overviewWidth - overviewPadding + redBorderSize * 2;
-        float top = overviewPadding * 2 + rectScreenHeight - redBorderSize * 2;
-        float bottom = overviewHeight - overviewPadding + redBorderSize * 2;
+        //绘制红色框
+        float left = -getTranslateX();
+        if (left < 0) {
+            left = 0;
+        }
+        left /= overviewScale;
+        left /= getMatrixScaleX();
+        left += (overviewPadding - redBorderSize);
+
+        float currentWidth = getTranslateX() + seatBitmapWidth * getMatrixScaleX();
+        if (currentWidth > getWidth()) {
+            currentWidth = currentWidth - getWidth();
+        } else {
+            currentWidth = 0;
+        }
+        float right = (overviewWidth - overviewPadding + redBorderSize) - currentWidth / overviewScale / getMatrixScaleX();
+
+        float top = -getTranslateY() + overviewHeight;
+        if (top < 0) {
+            top = 0;
+        }
+        top /= overviewScale;
+        top /= getMatrixScaleY();
+        top += (overviewPadding * 2 + rectScreenHeight - redBorderSize);
+
+
+        float currentHeight = getTranslateY() + seatBitmapHeight * getMatrixScaleY();
+        if (currentHeight > getHeight()) {
+            currentHeight = currentHeight - getHeight();
+        } else {
+            currentHeight = 0;
+        }
+        float bottom = (overviewHeight - overviewPadding + redBorderSize) - currentHeight / overviewScale / getMatrixScaleY();
         canvas.drawRect(left, top, right, bottom, redBorderPaint);
     }
 
@@ -910,7 +959,7 @@ public class SeatTableView extends View {
 
         @Override
         public boolean onScaleBegin(ScaleGestureDetector scaleGestureDetector) {
-            return false;
+            return true;
         }
 
         @Override
@@ -923,6 +972,8 @@ public class SeatTableView extends View {
     private GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
+            isOnClick = true;
+            // 处理选座
             final float x = event.getX();
             final float y = event.getY();
             final float scaleX = getMatrixScaleX();
@@ -949,14 +1000,15 @@ public class SeatTableView extends View {
                         } else if (seat.getState() == Seat.SEAT_TYPE_SELECTED) {
                             uncheck(seat);
                         }
-                    }
 
-                    float currentScaleY = getMatrixScaleY();
+                        isDrawOverviewBitmap = true;
+                        float currentScaleY = getMatrixScaleY();
 
-                    if (currentScaleY < 1.7) {
-                        mScaleX = x;
-                        mScaleY = y;
-                        zoomAnimate(currentScaleY, 1.9f);
+                        if (currentScaleY < 1.7) {
+                            mScaleX = x;
+                            mScaleY = y;
+                            zoomAnimate(currentScaleY, 1.9f);
+                        }
                     }
                 }
             });
